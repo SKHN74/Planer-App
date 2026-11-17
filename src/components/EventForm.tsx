@@ -4,6 +4,7 @@ import type { CalendarEvent, ReminderMin, RepeatKind } from '../db/types';
 import { fromKey } from '../lib/dates';
 import { weekdayMon0 } from '../lib/recurrence';
 import { Sheet } from './Sheet';
+import { shareIcs } from '../lib/ics';
 
 const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
@@ -151,6 +152,11 @@ export function EventForm({ event, day, onClose }: Props) {
       </div>
 
       <div className="field-group"><textarea className="note-input" placeholder="Notiz" value={note} onChange={(e) => setNote(e.target.value)} /></div>
+
+      <div>
+        <button className="btn secondary block" disabled={!title.trim() || endBeforeStart} onClick={() => shareIcs({ ...build(), id: event?.id, createdAt: event?.createdAt ?? now() })}>In iOS-Kalender übernehmen</button>
+        <p className="small muted" style={{ margin: '6px 4px 0' }}>Der iOS-Kalender erinnert dich auch, wenn diese App geschlossen ist.</p>
+      </div>
 
       {event && <button className="btn secondary block" style={{ color: 'var(--danger)' }} onClick={() => (isRecurring ? setAsk('delete') : remove())}>Termin löschen</button>}
     </Sheet>

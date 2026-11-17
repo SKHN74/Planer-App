@@ -52,6 +52,12 @@ export default function Einstellungen({ settings }: { settings: Settings }) {
     }
   }
 
+  const [perm, setPerm] = useState(typeof Notification === 'undefined' ? 'unsupported' : Notification.permission);
+  async function askPermission() {
+    if (typeof Notification === 'undefined') return;
+    setPerm(await Notification.requestPermission());
+  }
+
   async function removeDemo() {
     const n = await clearDemo(db);
     setMsg(`${n} Testeinträge gelöscht. Deine eigenen Einträge sind unverändert.`);
@@ -75,6 +81,28 @@ export default function Einstellungen({ settings }: { settings: Settings }) {
             <button key={m.value} aria-pressed={settings.theme === m.value} onClick={() => updateSettings({ theme: m.value })}>{m.label}</button>
           ))}
         </div>
+      </section>
+
+      <section>
+        <div className="section-label">Erinnerungen</div>
+        <div className="list">
+          <label className="row">
+            <span>Erinnerungen bei geöffneter App</span>
+            <input type="checkbox" className="switch" checked={settings.inAppHints} onChange={(e) => updateSettings({ inAppHints: e.target.checked })} />
+          </label>
+          {perm !== 'unsupported' && (
+            <div className="row">
+              <span>Zusätzlich als Mitteilung</span>
+              {perm === 'granted' ? <span className="small muted">erlaubt</span>
+                : perm === 'denied' ? <span className="small muted">abgelehnt</span>
+                : <button className="btn secondary" style={{ minHeight: 36 }} onClick={askPermission}>Erlauben</button>}
+            </div>
+          )}
+        </div>
+        <p className="small muted" style={{ margin: '6px 4px 0' }}>
+          Ist die App geschlossen, kann sie dich nicht erinnern. Für wichtige Termine nutze im Termin „In iOS-Kalender übernehmen“.
+          {perm === 'unsupported' && ' Mitteilungen gibt es nur, wenn die App über „Zum Home-Bildschirm“ installiert ist.'}
+        </p>
       </section>
 
       <section>
