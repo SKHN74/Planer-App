@@ -207,3 +207,14 @@ button { cursor: pointer; }
 .chain-day .small { font-size: 9px; font-weight: 600; }
 .chain-day.on { background: var(--green); color: var(--on-green); }
 .chain-day.today { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Ziele */
+.goal-card { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px; border-radius: 18px; background: var(--surface); border: 1px solid var(--border); text-align: left; color: var(--text); }
+.goal-card .ring { flex: none; }
+.goal-card .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.goal-card .t { font-size: 16px; font-weight: 700; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.goal-card .s { font-size: 13px; color: var(--muted); }
+.goal-card .meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+.pill { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 10px; }
+.pill.ok { background: var(--green-bg); color: var(--green-text); }
+.pill.behind { background: var(--orange-bg); color: var(--orange-text); }
