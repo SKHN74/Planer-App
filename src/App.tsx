@@ -12,12 +12,14 @@ import Statistik from './screens/Statistik';
 import Einstellungen from './screens/Einstellungen';
 import Irgendwann from './screens/Irgendwann';
 import { EditorProvider } from './components/Editor';
+import { ensureDefaults } from './lib/programs';
 
 export default function App() {
   const route = useRoute();
   const settings = useLiveQuery(() => getSettings(db), [], DEFAULT_SETTINGS);
 
   useEffect(() => applyTheme(settings.theme), [settings.theme]);
+  useEffect(() => { ensureDefaults(db).catch((e) => console.error('Grunddaten', e)); }, []);
 
   return (
     <EditorProvider>

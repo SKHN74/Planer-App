@@ -3,6 +3,8 @@ import { addMonths, isSameMonth } from 'date-fns';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { eventsOn, todosOn } from '../lib/agenda';
+import { plansOn, workoutsOn } from '../lib/sport';
+import { PlanItem, WorkoutItem, workoutTitle } from '../components/SportParts';
 import { formatLong, formatMonth, fromKey, monthGrid, toKey } from '../lib/dates';
 import { IconChevronLeft, IconChevronRight } from '../components/icons';
 import { useEditor } from '../components/Editor';
@@ -24,17 +26,25 @@ export default function Kalender() {
   const editor = useEditor();
   const events = useLiveQuery(() => db.events.toArray(), [], []);
   const todos = useLiveQuery(() => db.todos.toArray(), [], []);
+  const workouts = useLiveQuery(() => db.workouts.toArray(), [], []);
+  const sessions = useLiveQuery(() => db.planSessions.toArray(), [], []);
+  const sports = useLiveQuery(() => db.sportTypes.toArray(), [], []);
+  const programs = useLiveQuery(() => db.programs.toArray(), [], []);
 
   const chipsFor = (k: string): Chip[] => [
     ...eventsOn(events, k).map((e) => e.allDay
       ? { key: 'e' + e.id, label: e.title, cls: 'fill-blue' }
       : { key: 'e' + e.id, label: e.title, cls: '', dot: 'var(--blue)' }),
+    ...workoutsOn(workouts, k).map((w) => ({ key: 'w' + w.id, label: workoutTitle(w, sports, programs), cls: w.isRestDay ? '' : 'fill-green', dot: w.isRestDay ? 'var(--muted)' : undefined })),
+    ...plansOn(sessions, workouts, k).filter((p) => !p.done).map((p) => ({ key: 'p' + p.session.id, label: p.session.title, cls: '', dot: 'var(--green)' })),
     ...todosOn(todos, k, todayKey).filter((t) => !t.done).map((t) => ({ key: 't' + t.todo.id, label: t.todo.title, cls: '', dot: 'var(--orange)' }))
   ];
 
   const goToday = () => { setMonth(new Date(today.getFullYear(), today.getMonth(), 1)); setSelected(todayKey); };
   const selEvents = eventsOn(events, selected);
   const selTodos = todosOn(todos, selected, todayKey);
+  const selPlans = plansOn(sessions, workouts, selected).filter((p) => !p.done);
+  const selWorkouts = workoutsOn(workouts, selected);
 
   return (
     <main className="screen">
@@ -77,7 +87,7 @@ export default function Kalender() {
           <h2 style={{ fontSize: 18 }}>{formatLong(fromKey(selected))}</h2>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {selEvents.length === 0 && selTodos.length === 0 && <div className="empty">Keine Einträge</div>}
+          {selEvents.length === 0 && selTodos.length === 0 && selPlans.length === 0 && selWorkouts.length === 0 && <div className="empty">Keine Einträge</div>}
           {selEvents.map((e) => (
             <button key={e.id} className="agenda-item" onClick={() => editor.editEvent(selected, e)}>
               <span className="dot" style={{ background: 'var(--blue)' }} />
@@ -86,6 +96,8 @@ export default function Kalender() {
               <TestBadge show={e.isDemo} />
             </button>
           ))}
+          {selPlans.map((p) => <PlanItem key={'p' + p.session.id} s={p.session} sports={sports} onOpen={() => editor.editPlan(selected, p.session)} onDone={() => editor.editWorkout(selected, undefined, p.session)} />)}
+          {selWorkouts.map((w) => <WorkoutItem key={'w' + w.id} w={w} sports={sports} programs={programs} onOpen={() => editor.editWorkout(selected, w)} />)}
           {selTodos.length > 0 && <div className="card" style={{ padding: '4px 14px' }}>{selTodos.map((v) => <TodoRow key={v.todo.id} v={v} onOpen={() => editor.editTodo(selected, v.todo)} />)}</div>}
           <button className="btn block" onClick={() => editor.create(selected)}>+ Neuer Eintrag</button>
         </div>
