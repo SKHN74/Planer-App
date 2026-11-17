@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, now } from '../db/db';
 import type { Exercise, Measurement, Program } from '../db/types';
@@ -9,8 +9,11 @@ import { useEditor } from '../components/Editor';
 import { TestBadge } from '../components/AgendaParts';
 import { ExerciseSheet, MeasurementForm, PlanItem, StartProgramSheet, WorkoutItem } from '../components/SportParts';
 import { useTodayKey } from '../useToday';
+import { ProgramEditor } from '../components/ProgramEditor';
+import { Sheet } from '../components/Sheet';
+import { exportProgram, importProgram, parseProgram, programFileName, shareFile } from '../lib/share';
 
-type Open = { kind: 'start'; program: Program } | { kind: 'measure'; measurement?: Measurement } | { kind: 'exercise'; ex: Exercise };
+type Open = { kind: 'start'; program: Program } | { kind: 'edit'; program?: Program } | { kind: 'delete'; program: Program } | { kind: 'measure'; measurement?: Measurement } | { kind: 'exercise'; ex: Exercise };
 
 export default function Sport() {
   const today = useTodayKey();
@@ -25,6 +28,28 @@ export default function Sport() {
   const [open, setOpen] = useState<Open | null>(null);
   const [showRules, setShowRules] = useState(false);
   const [showExercises, setShowExercises] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  async function shareProgram(p: Program) {
+    const json = JSON.stringify(await exportProgram(db, p), null, 2);
+    await shareFile(new File([json], programFileName(p.name), { type: 'application/json' }), p.name);
+  }
+  async function importFile(f: File) {
+    try {
+      const res = await importProgram(db, parseProgram(await f.text()));
+      setMsg(`„${res.name}“ wurde hinzugefügt.`);
+    } catch (e) {
+      setMsg((e as Error).message);
+    }
+  }
+  async function deleteProgram(p: Program) {
+    await db.transaction('rw', db.programs, db.programRuns, async () => {
+      await db.programRuns.where('programId').equals(p.id!).delete();
+      await db.programs.delete(p.id!);
+    });
+    setOpen(null);
+  }
 
   const week = weekSummary(workouts, today);
   const todayPlans = plansOn(sessions, workouts, today).filter((p) => !p.done);
@@ -126,21 +151,33 @@ export default function Sport() {
           </div>
           {showRules && <ul className="rules" style={{ marginTop: 10 }}>{program.rules.map((r) => <li key={r}>{r}</li>)}</ul>}
         </section>
-      ) : (
-        <section>
-          <div className="section-label">Programme</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {programs.length === 0 && <div className="empty">Noch kein Programm</div>}
-            {programs.map((p) => (
-              <div key={p.id} className="card">
-                <div className="card-head"><h2>{p.name} · {p.weeks} Wochen</h2><TestBadge show={p.isDemo} /></div>
-                <div className="small muted">Vorlagen {p.units.map((u) => u.name).join(', ')}{p.ladders.length ? ` · ${p.ladders.length} Leitern` : ''}{p.measurements.length ? ' · Messungen' : ''}</div>
-                <button className="btn block" style={{ marginTop: 12 }} onClick={() => setOpen({ kind: 'start', program: p })}>Programm starten · Startdatum wählen</button>
+      ) : null}
+
+      <section>
+        <div className="section-label">Programme</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {programs.length === 0 && <div className="empty">Noch kein Programm</div>}
+          {programs.map((p) => (
+            <div key={p.id} className="card">
+              <div className="card-head"><h2>{p.name} · {p.weeks} Wochen</h2><TestBadge show={p.isDemo} /></div>
+              <div className="small muted">{p.units.length ? `Vorlagen ${p.units.map((u) => u.name).join(', ')}` : 'Noch keine Vorlagen'}{p.ladders.length ? ` · ${p.ladders.length} Leitern` : ''}{p.measurements.length ? ' · Messungen' : ''}</div>
+              {!run && <button className="btn block" style={{ marginTop: 12 }} onClick={() => setOpen({ kind: 'start', program: p })}>Programm starten · Startdatum wählen</button>}
+              <div className="program-actions">
+                <button className="link-btn" onClick={() => shareProgram(p)}>Teilen</button>
+                <button className="link-btn" onClick={() => setOpen({ kind: 'edit', program: p })}>Bearbeiten</button>
+                {run?.programId !== p.id && <button className="link-btn" style={{ color: 'var(--danger)' }} onClick={() => setOpen({ kind: 'delete', program: p })}>Löschen</button>}
               </div>
-            ))}
+            </div>
+          ))}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <button className="btn secondary" onClick={() => setOpen({ kind: 'edit' })}>+ Eigenes</button>
+            <button className="btn secondary" onClick={() => fileInput.current?.click()}>Importieren</button>
           </div>
-        </section>
-      )}
+          <input ref={fileInput} type="file" accept=".json,application/json" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) importFile(f); }} />
+          {msg && <div className="card small" role="status">{msg}</div>}
+          <p className="small muted" style={{ margin: '0 4px' }}>Teilen schickt nur die Vorlage (Einheiten, Übungen, Regeln) – keine Trainings oder Messungen.</p>
+        </div>
+      </section>
 
       {upcoming.length > 0 && (
         <section>
@@ -183,6 +220,13 @@ export default function Sport() {
 
       {open?.kind === 'start' && <StartProgramSheet program={open.program} today={today} onClose={() => setOpen(null)} />}
       {open?.kind === 'measure' && run && program && <MeasurementForm program={program} run={run} measurement={open.measurement} today={today} onClose={() => setOpen(null)} />}
+      {open?.kind === 'edit' && <ProgramEditor key={open.program?.id ?? 'new'} program={open.program} onClose={() => setOpen(null)} />}
+      {open?.kind === 'delete' && (
+        <Sheet title="Programm löschen" onClose={() => setOpen(null)}>
+          <p style={{ margin: 0 }}>„{open.program.name}“ wird gelöscht. Deine eingetragenen Trainings bleiben erhalten.</p>
+          <button className="btn danger block" onClick={() => deleteProgram(open.program)}>Löschen</button>
+        </Sheet>
+      )}
       {open?.kind === 'exercise' && <ExerciseSheet ex={open.ex} onClose={() => setOpen(null)} />}
     </main>
   );

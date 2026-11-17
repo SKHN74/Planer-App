@@ -237,3 +237,11 @@ button { cursor: pointer; }
 .sport-row + .sport-row { margin-top: 12px; }
 .stat-line { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 40px; font-size: 15px; }
 .stat-line + .stat-line { border-top: 1px solid var(--border); }
+
+/* Programm-Editor */
+.ex-edit { gap: 6px; padding-top: 8px; padding-bottom: 8px; }
+.ex-edit select, .ex-edit input { text-align: left !important; }
+.ex-edit .mini { flex: none !important; width: 34px; text-align: center !important; background: var(--surface2) !important; border-radius: 8px; min-height: 34px; }
+.ex-edit .mini.wide { width: 64px; }
+.program-actions { display: flex; gap: 4px; margin: 6px -8px -8px; }
+.program-actions .link-btn { font-size: 15px; }
