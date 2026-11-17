@@ -7,6 +7,7 @@ import { loadDemo } from '../lib/demoData';
 import { backupFileName, createBackup, parseBackup, restoreBackup } from '../lib/backup';
 import { formatShort } from '../lib/dates';
 import { IconChevronLeft } from '../components/icons';
+import { HabitSettings } from '../components/HabitParts';
 
 const MODES: { value: ThemeMode; label: string }[] = [
   { value: 'hell', label: 'Hell' },
@@ -58,6 +59,16 @@ export default function Einstellungen({ settings }: { settings: Settings }) {
     setPerm(await Notification.requestPermission());
   }
 
+  async function shareApp() {
+    const url = location.origin + location.pathname;
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Planer', text: 'Mein Planer für Kalender, Sport und Ziele – Daten bleiben auf deinem Gerät.', url }); } catch { /* abgebrochen */ }
+    } else {
+      await navigator.clipboard?.writeText(url).catch(() => undefined);
+      setMsg('Link kopiert: ' + url);
+    }
+  }
+
   async function removeDemo() {
     const n = await clearDemo(db);
     setMsg(`${n} Testeinträge gelöscht. Deine eigenen Einträge sind unverändert.`);
@@ -83,6 +94,8 @@ export default function Einstellungen({ settings }: { settings: Settings }) {
         </div>
       </section>
 
+      <HabitSettings />
+
       <section>
         <div className="section-label">Erinnerungen</div>
         <div className="list">
@@ -103,6 +116,14 @@ export default function Einstellungen({ settings }: { settings: Settings }) {
           Ist die App geschlossen, kann sie dich nicht erinnern. Für wichtige Termine nutze im Termin „In iOS-Kalender übernehmen“.
           {perm === 'unsupported' && ' Mitteilungen gibt es nur, wenn die App über „Zum Home-Bildschirm“ installiert ist.'}
         </p>
+      </section>
+
+      <section>
+        <div className="section-label">App teilen</div>
+        <div className="card">
+          <div className="small">Schick jemandem den Link. Wer die App öffnet und zum Home-Bildschirm hinzufügt, hat seine eigene, leere App – deine Daten bleiben bei dir.</div>
+          <button className="btn secondary block" style={{ marginTop: 12 }} onClick={shareApp}>Link teilen</button>
+        </div>
       </section>
 
       <section>

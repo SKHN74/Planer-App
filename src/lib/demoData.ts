@@ -1,6 +1,6 @@
 import { addDays } from 'date-fns';
 import type { PlanerDB } from '../db/db';
-import type { CalendarEvent, PlanSession, Todo, Workout } from '../db/types';
+import type { CalendarEvent, Goal, HabitLog, PlanSession, Todo, Workout } from '../db/types';
 import { ensureDefaults, WINTER_ARC } from './programs';
 import { toKey } from './dates';
 import { weekdayMon0 } from './recurrence';
@@ -57,11 +57,28 @@ export async function loadDemo(d: PlanerDB, today = new Date()): Promise<number>
     { ...base, title: 'Laufen', sportTypeId: await sport('Laufen'), date: day(1), time: '07:00', targetDurationMin: 30, targetDistanceKm: 5 }
   ];
 
-  await d.transaction('rw', [d.events, d.todos, d.workouts, d.planSessions], async () => {
+  // Gewohnheiten der letzten Tage (nur die Standard-Gewohnheiten, falls vorhanden)
+  const habitLogs: HabitLog[] = [];
+  const pattern: Record<string, number[]> = { Schritte: [1, 1, 0, 1, 1, 1], Wasser: [8, 6, 8, 5, 8, 8], Schlaf: [1, 0, 1, 1, 0, 1] };
+  for (const h of await d.habits.toArray()) {
+    pattern[h.name]?.forEach((value, i) => value && habitLogs.push({ ...base, habitId: h.id!, date: day(i - 6), value }));
+  }
+
+  const water = await d.habits.where('order').above(-1).filter((h) => h.name === 'Wasser').first();
+  const goals: Goal[] = [
+    { ...base, title: '3× Gym pro Woche', type: 'haeufigkeit', period: 'woche', metric: 'einheiten', target: 3, sportTypeId: await sport('Gym'), active: true },
+    { ...base, title: '50 km Laufen im Monat', type: 'summe', period: 'monat', metric: 'km', target: 50, sportTypeId: await sport('Laufen'), active: true },
+    { ...base, title: '10 km unter 60 Min', type: 'leistung', period: 'stichtag', metric: 'zeit', target: 60, distanceKm: 10, sportTypeId: await sport('Laufen'), deadline: toKey(new Date(today.getFullYear() + 1, 2, 31)), active: true },
+    ...(water ? [{ ...base, title: 'Wasser 2 L an 6 Tagen', type: 'gewohnheit' as const, period: 'woche' as const, metric: 'erledigt' as const, target: 6, habitId: water.id, active: true }] : [])
+  ];
+
+  await d.transaction('rw', [d.events, d.todos, d.workouts, d.planSessions, d.habitLogs, d.goals], async () => {
+    await d.goals.bulkAdd(goals);
+    await d.habitLogs.bulkAdd(habitLogs);
     await d.events.bulkAdd(events);
     await d.todos.bulkAdd(todos);
     await d.workouts.bulkAdd(workouts);
     await d.planSessions.bulkAdd(sessions);
   });
-  return events.length + todos.length + workouts.length + sessions.length;
+  return events.length + todos.length + workouts.length + sessions.length + habitLogs.length + goals.length;
 }

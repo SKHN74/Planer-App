@@ -198,4 +198,6 @@ export interface Settings {
   lastBackupAt?: string;
   defaultReminderMin?: ReminderMin;
   inAppHints: boolean;
+  /** Standard-Gewohnheiten wurden einmal angelegt. */
+  habitsSeeded?: boolean;
 }

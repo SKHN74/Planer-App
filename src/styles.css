@@ -193,3 +193,55 @@ button { cursor: pointer; }
 .reminders { position: sticky; top: 0; z-index: 20; display: flex; flex-direction: column; gap: 6px; padding: calc(env(safe-area-inset-top) + 8px) 16px 8px; background: var(--bg); }
 .reminder { display: flex; align-items: center; gap: 10px; padding: 10px 6px 10px 12px; border-radius: 14px; background: var(--blue-bg); color: var(--blue-text); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); }
 .reminder strong { display: block; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Gewohnheiten & Kette */
+.habit-check { border-radius: 13px; }
+.habit-check[aria-checked='true'] { background: var(--green); border-color: var(--green); }
+.habit-ring { width: 26px; height: 26px; flex: none; border-radius: 13px; border: 2px solid var(--muted); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--muted); }
+.habit-ring.done { background: var(--green); border-color: var(--green); }
+.stepper .count { min-width: 36px; text-align: center; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; align-self: center; }
+.chain-count { font-size: 14px; color: var(--muted); }
+.chain-count strong { font-size: 22px; color: var(--green); }
+.chain { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 3px; }
+.chain-day { aspect-ratio: 1; border-radius: 6px; background: var(--surface2); display: flex; align-items: center; justify-content: center; color: var(--muted); }
+.chain-day .small { font-size: 9px; font-weight: 600; }
+.chain-day.on { background: var(--green); color: var(--on-green); }
+.chain-day.today { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Ziele */
+.goal-card { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px; border-radius: 18px; background: var(--surface); border: 1px solid var(--border); text-align: left; color: var(--text); }
+.goal-card .ring { flex: none; }
+.goal-card .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.goal-card .t { font-size: 16px; font-weight: 700; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.goal-card .s { font-size: 13px; color: var(--muted); }
+.goal-card .meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+.pill { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 10px; }
+.pill.ok { background: var(--green-bg); color: var(--green-text); }
+.pill.behind { background: var(--orange-bg); color: var(--orange-text); }
+
+/* Statistik */
+.period-nav { display: flex; align-items: center; gap: 8px; }
+.period-nav .icon-btn:disabled { opacity: 0.35; }
+.period-label { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; font-size: 15px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 12px 14px; }
+.kpi .l { font-size: 13px; color: var(--muted); font-weight: 600; }
+.kpi .v { font-size: 24px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.kpi .d { font-size: 12px; font-weight: 600; margin-top: 2px; }
+.bars { display: flex; align-items: flex-end; gap: 6px; height: 160px; }
+.bar-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; }
+.bar { width: 100%; max-width: 34px; min-height: 2px; border-radius: 6px 6px 2px 2px; background: var(--green); }
+.bar.current { background: var(--accent); }
+.bar-v { font-size: 11px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar-l { font-size: 11px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.sport-row + .sport-row { margin-top: 12px; }
+.stat-line { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 40px; font-size: 15px; }
+.stat-line + .stat-line { border-top: 1px solid var(--border); }
+
+/* Programm-Editor */
+.ex-edit { gap: 6px; padding-top: 8px; padding-bottom: 8px; }
+.ex-edit select, .ex-edit input { text-align: left !important; }
+.ex-edit .mini { flex: none !important; width: 34px; text-align: center !important; background: var(--surface2) !important; border-radius: 8px; min-height: 34px; }
+.ex-edit .mini.wide { width: 64px; }
+.program-actions { display: flex; gap: 4px; margin: 6px -8px -8px; }
+.program-actions .link-btn { font-size: 15px; }
