@@ -13,6 +13,7 @@ import { IconGear } from '../components/icons';
 import { useEditor } from '../components/Editor';
 import { TestBadge, TodoRow, eventTimeLabel } from '../components/AgendaParts';
 import { useNow } from '../useToday';
+import { catClass } from '../lib/categories';
 
 export default function Heute() {
   const nowDate = useNow();
@@ -22,6 +23,7 @@ export default function Heute() {
   const editor = useEditor();
   const events = useLiveQuery(() => db.events.toArray(), [], []);
   const todos = useLiveQuery(() => db.todos.toArray(), [], []);
+  const categories = useLiveQuery(() => db.categories.toArray(), [], []);
   const workouts = useLiveQuery(() => db.workouts.toArray(), [], []);
   const sessions = useLiveQuery(() => db.planSessions.toArray(), [], []);
   const sports = useLiveQuery(() => db.sportTypes.toArray(), [], []);
@@ -78,7 +80,7 @@ export default function Heute() {
                 {i === nowIndex && <div className="now-line"><span>{nowHM}</span><span /></div>}
                 <div className="event-row">
                   <div className="event-time">{e.allDay ? '' : e.start}</div>
-                  <button className="event-box" onClick={() => editor.editEvent(dayKey, e)}>
+                  <button className={'event-box ' + catClass(categories, e.categoryId)} onClick={() => editor.editEvent(dayKey, e)}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6 }}><strong>{e.title}</strong><TestBadge show={e.isDemo} /></div>
                     <div className="meta">{[eventTimeLabel(e), e.location].filter(Boolean).join(' · ')}</div>
                   </button>

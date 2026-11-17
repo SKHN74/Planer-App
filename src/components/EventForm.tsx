@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { catClass } from '../lib/categories';
 import { db, now } from '../db/db';
 import type { CalendarEvent, ReminderMin, RepeatKind } from '../db/types';
 import { fromKey } from '../lib/dates';
@@ -29,6 +31,8 @@ export function EventForm({ event, day, onClose }: Props) {
   const [weekdays, setWeekdays] = useState<number[]>(event?.repeat?.weekdays ?? [weekdayMon0(fromKey(day))]);
   const [until, setUntil] = useState(event?.repeat?.until ?? '');
   const [reminder, setReminder] = useState<string>(event?.reminderMin ? String(event.reminderMin) : '');
+  const categories = useLiveQuery(() => db.categories.orderBy('order').toArray(), [], []);
+  const [categoryId, setCategoryId] = useState<number | undefined>(event?.categoryId);
   const [ask, setAsk] = useState<null | 'save' | 'delete'>(null);
 
   const isRecurring = !!event?.repeat;
@@ -57,6 +61,7 @@ export function EventForm({ event, day, onClose }: Props) {
       repeat: repeat ? { kind: repeat, weekdays: repeat === 'woechentlich' ? [...weekdays].sort() : undefined, until: until || undefined } : undefined,
       exceptions: event?.exceptions,
       reminderMin: reminder ? (Number(reminder) as ReminderMin) : undefined,
+      categoryId,
       updatedAt: now(),
       isDemo: event?.isDemo
     };
@@ -103,6 +108,16 @@ export function EventForm({ event, day, onClose }: Props) {
     <Sheet title={event ? 'Termin bearbeiten' : 'Neuer Termin'} onClose={onClose} canSave={!!title.trim() && !endBeforeStart} onSave={() => (isRecurring ? setAsk('save') : save())}>
       <div className="field-group">
         <input className="title-input" placeholder="Titel" value={title} onChange={(e) => setTitle(e.target.value)} autoFocus={!event} />
+        {categories.length > 0 && (
+          <div className="chips" role="group" aria-label="Kategorie">
+            {categories.map((c) => (
+              <button key={c.id} type="button" className={'chip cat-chip ' + catClass(categories, c.id)} aria-pressed={categoryId === c.id}
+                onClick={() => setCategoryId(categoryId === c.id ? undefined : c.id)}>
+                <span className="cat-dot" />{c.name}
+              </button>
+            ))}
+          </div>
+        )}
         <label className="field"><span>Ort</span><input placeholder="optional" value={location} onChange={(e) => setLocation(e.target.value)} /></label>
       </div>
 

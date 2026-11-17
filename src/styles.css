@@ -245,3 +245,28 @@ button { cursor: pointer; }
 .ex-edit .mini.wide { width: 64px; }
 .program-actions { display: flex; gap: 4px; margin: 6px -8px -8px; }
 .program-actions .link-btn { font-size: 15px; }
+
+/* Termin-Kategorien: setzen --cat (Punkt), --cat-bg (Fläche) und --cat-fg (Text) */
+.cat-blau { --cat: #1F6FEB; --cat-bg: #E3EDFD; --cat-fg: #0D459E; }
+.cat-gruen { --cat: #14794A; --cat-bg: #DDF2E6; --cat-fg: #0C5531; }
+.cat-orange { --cat: #C2570C; --cat-bg: #FCEADB; --cat-fg: #7F3906; }
+.cat-lila { --cat: #7C3AED; --cat-bg: #EDE5FD; --cat-fg: #4C1D95; }
+.cat-rot { --cat: #D93036; --cat-bg: #FCE4E4; --cat-fg: #8A1C20; }
+.cat-tuerkis { --cat: #0E8A8A; --cat-bg: #D9F3F2; --cat-fg: #0A5656; }
+.cat-gelb { --cat: #B88A00; --cat-bg: #FFF3C4; --cat-fg: #6E5200; }
+.cat-grau { --cat: #6B7280; --cat-bg: #ECEEF1; --cat-fg: #374151; }
+:root[data-theme='dunkel'] .cat-blau { --cat: #6AA5FF; --cat-bg: #1B2C4B; --cat-fg: #D3E3FF; }
+:root[data-theme='dunkel'] .cat-gruen { --cat: #45C982; --cat-bg: #16372A; --cat-fg: #C8F1D9; }
+:root[data-theme='dunkel'] .cat-orange { --cat: #FF9F59; --cat-bg: #45270F; --cat-fg: #FFDDC4; }
+:root[data-theme='dunkel'] .cat-lila { --cat: #B794FF; --cat-bg: #2E2350; --cat-fg: #E7DCFF; }
+:root[data-theme='dunkel'] .cat-rot { --cat: #FF7A7F; --cat-bg: #4A1D20; --cat-fg: #FFD9DA; }
+:root[data-theme='dunkel'] .cat-tuerkis { --cat: #4FD1CF; --cat-bg: #123A3A; --cat-fg: #C9F4F3; }
+:root[data-theme='dunkel'] .cat-gelb { --cat: #FFD36B; --cat-bg: #3B300E; --cat-fg: #FFEFC2; }
+:root[data-theme='dunkel'] .cat-grau { --cat: #A3AAB7; --cat-bg: #2B3039; --cat-fg: #E2E5EA; }
+.event-box[class*='cat-'] { background: var(--cat-bg); color: var(--cat-fg); }
+.cal-chip.fill-cat { background: var(--cat-bg); color: var(--cat-fg); }
+.cat-dot { width: 10px; height: 10px; flex: none; border-radius: 5px; background: var(--cat); }
+.chip.cat-chip { display: inline-flex; align-items: center; gap: 6px; }
+.chip.cat-chip[aria-pressed='true'] { background: var(--cat-bg); border-color: var(--cat); color: var(--cat-fg); }
+.color-swatch { width: 34px; height: 34px; border-radius: 17px; border: 3px solid transparent; background: var(--cat); padding: 0; }
+.color-swatch[aria-pressed='true'] { border-color: var(--text); }

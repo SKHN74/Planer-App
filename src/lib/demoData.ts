@@ -14,15 +14,19 @@ export async function loadDemo(d: PlanerDB, today = new Date()): Promise<number>
   const day = (n: number) => toKey(addDays(today, n));
   const base = { createdAt: ts, updatedAt: ts, isDemo: true };
 
+  await ensureDefaults(d);
+  const cat = async (name: string) => (await d.categories.filter((c) => c.name === name).first())?.id;
+  const [uni, privat, freizeit] = [await cat('Uni'), await cat('Privat'), await cat('Freizeit')];
   const events: CalendarEvent[] = [
-    { ...base, title: 'Zahnarzt', date: day(0), allDay: false, start: '08:30', end: '09:00', location: 'Praxis Dr. Weber', reminderMin: 60 },
-    { ...base, title: 'Mittagessen mit Anna', date: day(0), allDay: false, start: '12:00', end: '13:00', location: 'Café Rosa' },
-    { ...base, title: 'Yoga', date: day(-14), allDay: false, start: '07:00', end: '08:00', repeat: { kind: 'woechentlich', weekdays: [weekdayMon0(addDays(today, 2))] } },
-    { ...base, title: 'Geburtstag Lisa', date: day(3), allDay: true },
-    { ...base, title: 'Kino', date: day(3), allDay: false, start: '18:30', end: '21:00', location: 'Cinemaxx' },
-    { ...base, title: 'Elternabend', date: day(-5), allDay: false, start: '19:00', end: '20:30', location: 'Grundschule' },
-    { ...base, title: 'Termin Steuerberater', date: day(9), allDay: false, start: '10:00', end: '11:00', reminderMin: 1440 },
-    { ...base, title: 'Wochenende Harz', date: day(4), allDay: true, repeat: { kind: 'taeglich', until: day(5) } },
+    { ...base, title: 'Zahnarzt', categoryId: privat, date: day(0), allDay: false, start: '08:30', end: '09:00', location: 'Praxis Dr. Weber', reminderMin: 60 },
+    { ...base, title: 'Mittagessen mit Anna', categoryId: freizeit, date: day(0), allDay: false, start: '12:00', end: '13:00', location: 'Café Rosa' },
+    { ...base, title: 'Yoga', categoryId: freizeit, date: day(-14), allDay: false, start: '07:00', end: '08:00', repeat: { kind: 'woechentlich', weekdays: [weekdayMon0(addDays(today, 2))] } },
+    { ...base, title: 'Geburtstag Lisa', categoryId: privat, date: day(3), allDay: true },
+    { ...base, title: 'Kino', categoryId: freizeit, date: day(3), allDay: false, start: '18:30', end: '21:00', location: 'Cinemaxx' },
+    { ...base, title: 'Elternabend', categoryId: privat, date: day(-5), allDay: false, start: '19:00', end: '20:30', location: 'Grundschule' },
+    { ...base, title: 'Vorlesung Mathe', categoryId: uni, date: day(-21), allDay: false, start: '10:15', end: '11:45', location: 'Hörsaal 2', repeat: { kind: 'woechentlich', weekdays: [weekdayMon0(addDays(today, 1))] } },
+    { ...base, title: 'Vorlesung Statistik', categoryId: uni, date: day(9), allDay: false, start: '10:00', end: '11:00', reminderMin: 1440 },
+    { ...base, title: 'Wochenende Harz', categoryId: freizeit, date: day(4), allDay: true, repeat: { kind: 'taeglich', until: day(5) } },
     { ...base, title: 'Miete prüfen', date: toKey(new Date(today.getFullYear(), today.getMonth(), 1)), allDay: true, repeat: { kind: 'monatlich' } }
   ];
   const todos: Todo[] = [

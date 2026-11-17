@@ -37,6 +37,16 @@ export interface CalendarEvent extends Base {
   /** Einzelne Tage, an denen eine Wiederholung ausfällt. */
   exceptions?: ISODate[];
   reminderMin?: ReminderMin;
+  /** Kategorie (Uni, Privat, Freizeit …) bestimmt die Farbe. */
+  categoryId?: number;
+}
+
+export type CategoryColor = 'blau' | 'gruen' | 'orange' | 'lila' | 'rot' | 'tuerkis' | 'gelb' | 'grau';
+
+export interface Category extends Base {
+  name: string;
+  color: CategoryColor;
+  order: number;
 }
 
 export type Priority = 1 | 2 | 3; // 1 = hoch, 2 = mittel, 3 = niedrig
@@ -200,4 +210,6 @@ export interface Settings {
   inAppHints: boolean;
   /** Standard-Gewohnheiten wurden einmal angelegt. */
   habitsSeeded?: boolean;
+  /** Standard-Kategorien wurden einmal angelegt. */
+  categoriesSeeded?: boolean;
 }
