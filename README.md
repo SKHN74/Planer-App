@@ -12,7 +12,7 @@ npm test           # Tests (Vitest)
 npm run build      # Typprüfung + Produktions-Build nach dist/
 ```
 
-Die App wird unter `/planer-app/` ausgeliefert (GitHub Pages). Für einen anderen Pfad `BASE_PATH=/ npm run build`.
+Die App nutzt relative Pfade und läuft daher unter https://skhn74.github.io/Planer-App/ wie auch lokal.
 
 ## Aufbau
 
