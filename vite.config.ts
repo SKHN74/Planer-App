@@ -3,8 +3,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// GitHub Pages serviert die App unter /planer-app/. Lokal kann BASE_PATH=/ gesetzt werden.
-const base = process.env.BASE_PATH ?? '/planer-app/';
+// Relative Pfade: funktioniert unter https://skhn74.github.io/Planer-App/ (Groß-/Kleinschreibung egal) und lokal.
+const base = process.env.BASE_PATH ?? './';
 
 export default defineConfig({
   base,
