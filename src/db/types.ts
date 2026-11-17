@@ -69,6 +69,7 @@ export interface Workout extends Base {
   intensity?: 1 | 2 | 3 | 4 | 5;
   note?: string;
   /** Vorlage (Einheit) aus einem Programm, falls daraus eingetragen. */
+  programId?: number;
   unitTemplateId?: number;
   /** Geplante Einheit, die hiermit erledigt wurde. */
   planSessionId?: number;
@@ -80,6 +81,7 @@ export interface Workout extends Base {
 export interface PlanSession extends Base {
   title: string;
   sportTypeId: number;
+  programId?: number;
   unitTemplateId?: number;
   date: ISODate;
   time?: Time;
@@ -177,6 +179,7 @@ export interface Program extends Base {
 export interface ProgramRun extends Base {
   programId: number;
   startDate: ISODate;
+  /** Aktuelle Stufe je Leiter (Index ab 0). */
   ladderLevels: Record<number, number>;
   finishedAt?: string;
 }

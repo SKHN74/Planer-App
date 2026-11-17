@@ -1,6 +1,7 @@
 import { addDays } from 'date-fns';
 import type { PlanerDB } from '../db/db';
-import type { CalendarEvent, Todo } from '../db/types';
+import type { CalendarEvent, PlanSession, Todo, Workout } from '../db/types';
+import { ensureDefaults, WINTER_ARC } from './programs';
 import { toKey } from './dates';
 import { weekdayMon0 } from './recurrence';
 
@@ -32,9 +33,35 @@ export async function loadDemo(d: PlanerDB, today = new Date()): Promise<number>
     { ...base, title: 'Wäsche abholen', date: day(-1), priority: 2, doneAt: addDays(today, -1).toISOString() },
     { ...base, title: 'Fotobuch gestalten', priority: 3 }
   ];
-  await d.transaction('rw', d.events, d.todos, async () => {
+
+  // Sport: braucht Sportarten und die Winter-Arc-Vorlage
+  await ensureDefaults(d);
+  const sport = async (name: string) => (await d.sportTypes.where('name').equals(name).first())!.id!;
+  const program = (await d.programs.where('name').equals(WINTER_ARC.name).first())!;
+  const unit = (name: string) => program.units.find((u) => u.name === name)!;
+  const gymA = unit('Gym A');
+  const [squat, lat, press, row, plank] = gymA.exercises.map((e) => e.exerciseId);
+  const sets3 = (exerciseId: number, weightKg: number | undefined, reps: number[]) => reps.map((r) => ({ exerciseId, weightKg, reps: r }));
+  const wd = (n: number) => weekdayMon0(addDays(today, n));
+
+  const workouts: Workout[] = [
+    { ...base, sportTypeId: await sport('Gym'), programId: program.id, unitTemplateId: gymA.id, date: day(-6), time: '18:00', durationMin: 55, intensity: 3,
+      sets: [...sets3(squat, 12, [12, 12, 12]), ...sets3(lat, 30, [12, 11, 10]), ...sets3(press, 25, [12, 12, 10]), ...sets3(row, 30, [12, 12, 12]), ...sets3(plank, undefined, [40, 35, 30])] },
+    { ...base, sportTypeId: await sport('Laufen'), date: day(-4), time: '07:00', durationMin: 32, distanceKm: 5.2, intensity: 3, note: 'Runde am Fluss' },
+    { ...base, sportTypeId: await sport('Zuhause'), programId: program.id, unitTemplateId: unit('Zuhause').id, date: day(-3), durationMin: 25, intensity: 4 },
+    { ...base, sportTypeId: await sport('Sonstiges'), date: day(-2), durationMin: 0, isRestDay: true },
+    { ...base, sportTypeId: await sport('Radfahren'), date: day(-1), time: '16:30', durationMin: 60, distanceKm: 21.5, intensity: 2 }
+  ];
+  const sessions: PlanSession[] = [
+    { ...base, title: 'Gym A', sportTypeId: await sport('Gym'), programId: program.id, unitTemplateId: gymA.id, date: day(-14), time: '18:00', targetDurationMin: 55, repeat: { kind: 'woechentlich', weekdays: [wd(0), wd(3)].sort() } },
+    { ...base, title: 'Laufen', sportTypeId: await sport('Laufen'), date: day(1), time: '07:00', targetDurationMin: 30, targetDistanceKm: 5 }
+  ];
+
+  await d.transaction('rw', [d.events, d.todos, d.workouts, d.planSessions], async () => {
     await d.events.bulkAdd(events);
     await d.todos.bulkAdd(todos);
+    await d.workouts.bulkAdd(workouts);
+    await d.planSessions.bulkAdd(sessions);
   });
-  return events.length + todos.length;
+  return events.length + todos.length + workouts.length + sessions.length;
 }
