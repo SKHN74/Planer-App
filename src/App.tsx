@@ -12,6 +12,7 @@ import Statistik from './screens/Statistik';
 import Einstellungen from './screens/Einstellungen';
 import Irgendwann from './screens/Irgendwann';
 import { EditorProvider } from './components/Editor';
+import { ReminderBanner } from './components/ReminderBanner';
 
 export default function App() {
   const route = useRoute();
@@ -22,6 +23,7 @@ export default function App() {
   return (
     <EditorProvider>
     <div className="app">
+      <ReminderBanner enabled={settings.inAppHints} />
       {route === 'heute' && <Heute />}
       {route === 'kalender' && <Kalender />}
       {route === 'sport' && <Sport />}
