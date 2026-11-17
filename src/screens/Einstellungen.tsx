@@ -7,6 +7,7 @@ import { loadDemo } from '../lib/demoData';
 import { backupFileName, createBackup, parseBackup, restoreBackup } from '../lib/backup';
 import { formatShort } from '../lib/dates';
 import { IconChevronLeft } from '../components/icons';
+import { HabitSettings } from '../components/HabitParts';
 
 const MODES: { value: ThemeMode; label: string }[] = [
   { value: 'hell', label: 'Hell' },
@@ -82,6 +83,8 @@ export default function Einstellungen({ settings }: { settings: Settings }) {
           ))}
         </div>
       </section>
+
+      <HabitSettings />
 
       <section>
         <div className="section-label">Erinnerungen</div>

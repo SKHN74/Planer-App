@@ -6,6 +6,7 @@ import { db } from '../db/db';
 import { eventsOn, todosOn } from '../lib/agenda';
 import { plansOn, workoutsOn } from '../lib/sport';
 import { PlanItem, WorkoutItem } from '../components/SportParts';
+import { ChainCard, HabitsCard } from '../components/HabitParts';
 import { fromKey, isoWeek, toKey, weekDays, weekdayShort } from '../lib/dates';
 import { DemoBanner } from '../components/DemoBanner';
 import { IconGear } from '../components/icons';
@@ -107,6 +108,9 @@ export default function Heute() {
         )}
         <button className="btn secondary block" style={{ marginTop: 10 }} onClick={() => editor.editWorkout(dayKey)}>+ Training</button>
       </section>
+
+      <HabitsCard day={dayKey} today={todayKey} />
+      {isToday && <ChainCard today={todayKey} />}
 
       <button className="fab" aria-label="Neuer Eintrag" onClick={() => editor.create(dayKey)}>+</button>
     </main>
