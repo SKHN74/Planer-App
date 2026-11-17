@@ -27,3 +27,17 @@ describe('Testdaten', () => {
     expect(await d.events.count()).toBe(0);
   });
 });
+
+describe('Beispieldaten laden', () => {
+  it('lädt markierte Daten, die sich vollständig wieder löschen lassen', async () => {
+    const { loadDemo } = await import('./demoData');
+    const x = new PlanerDB('test-demo-load-' + Math.random());
+    await x.todos.add({ title: 'Mein To-do', priority: 1, createdAt: ts, updatedAt: ts });
+    const n = await loadDemo(x, new Date(2026, 10, 17));
+    expect(n).toBeGreaterThan(10);
+    expect(await countDemo(x)).toBe(n);
+    await clearDemo(x);
+    expect((await x.todos.toArray()).map((t) => t.title)).toEqual(['Mein To-do']);
+    expect(await x.events.count()).toBe(0);
+  });
+});

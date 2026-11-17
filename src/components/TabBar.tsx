@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import { IconCalendar, IconGoal, IconHome, IconSport, IconStats } from './icons';
 
-export type Route = 'heute' | 'kalender' | 'sport' | 'ziele' | 'statistik' | 'einstellungen';
+export type Route = 'heute' | 'kalender' | 'sport' | 'ziele' | 'statistik' | 'einstellungen' | 'irgendwann';
 
 const TABS: { route: Route; label: string; icon: () => ReactElement }[] = [
   { route: 'heute', label: 'Heute', icon: IconHome },

@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db, updateSettings } from '../db/db';
 import type { Settings, ThemeMode } from '../db/types';
 import { clearDemo, countDemo } from '../lib/demo';
+import { loadDemo } from '../lib/demoData';
 import { backupFileName, createBackup, parseBackup, restoreBackup } from '../lib/backup';
 import { formatShort } from '../lib/dates';
 import { IconChevronLeft } from '../components/icons';
@@ -85,7 +86,10 @@ export default function Einstellungen({ settings }: { settings: Settings }) {
               <button className="btn danger block" style={{ marginTop: 12 }} onClick={removeDemo}>Testdaten löschen</button>
             </>
           ) : (
-            <div className="muted">Keine Testdaten geladen.</div>
+            <>
+              <div className="muted">Keine Testdaten geladen. Beispiele helfen beim Ausprobieren und sind mit TEST markiert.</div>
+              <button className="btn secondary block" style={{ marginTop: 12 }} onClick={async () => setMsg(`${await loadDemo(db)} Testeinträge geladen.`)}>Testdaten laden</button>
+            </>
           )}
         </div>
       </section>
