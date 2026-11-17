@@ -1,15 +1,15 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type {
   CalendarEvent, Todo, Workout, PlanSession, Goal, SportType, Exercise,
-  Habit, HabitLog, Program, ProgramRun, Measurement, Settings
+  Habit, HabitLog, Program, ProgramRun, Measurement, Settings, Category
 } from './types';
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 /** Tabellen mit Benutzer- oder Testdaten (alles außer Einstellungen). */
 export const DATA_TABLES = [
   'events', 'todos', 'workouts', 'planSessions', 'goals', 'sportTypes', 'exercises',
-  'habits', 'habitLogs', 'programs', 'programRuns', 'measurements'
+  'habits', 'habitLogs', 'programs', 'programRuns', 'measurements', 'categories'
 ] as const;
 export type DataTable = (typeof DATA_TABLES)[number];
 
@@ -27,10 +27,11 @@ export class PlanerDB extends Dexie {
   programRuns!: EntityTable<ProgramRun, 'id'>;
   measurements!: EntityTable<Measurement, 'id'>;
   settings!: EntityTable<Settings, 'id'>;
+  categories!: EntityTable<Category, 'id'>;
 
   constructor(name = 'planer') {
     super(name);
-    this.version(SCHEMA_VERSION).stores({
+    this.version(1).stores({
       events: '++id, date, isDemo',
       todos: '++id, date, doneAt, isDemo',
       workouts: '++id, date, sportTypeId, isDemo',
@@ -45,6 +46,8 @@ export class PlanerDB extends Dexie {
       measurements: '++id, date, programRunId, isDemo',
       settings: 'id'
     });
+    // Version 2: Termin-Kategorien
+    this.version(2).stores({ categories: '++id, order, isDemo' });
   }
 }
 

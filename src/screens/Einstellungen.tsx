@@ -8,6 +8,7 @@ import { backupFileName, createBackup, parseBackup, restoreBackup } from '../lib
 import { formatShort } from '../lib/dates';
 import { IconChevronLeft } from '../components/icons';
 import { HabitSettings } from '../components/HabitParts';
+import { CategorySettings } from '../components/CategoryParts';
 
 const MODES: { value: ThemeMode; label: string }[] = [
   { value: 'hell', label: 'Hell' },
@@ -93,6 +94,8 @@ export default function Einstellungen({ settings }: { settings: Settings }) {
           ))}
         </div>
       </section>
+
+      <CategorySettings />
 
       <HabitSettings />
 

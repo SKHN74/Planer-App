@@ -10,11 +10,12 @@ import { IconChevronLeft, IconChevronRight } from '../components/icons';
 import { useEditor } from '../components/Editor';
 import { TestBadge, TodoRow, eventTimeLabel } from '../components/AgendaParts';
 import { useTodayKey } from '../useToday';
+import { catClass } from '../lib/categories';
 
 const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 const MAX_CHIPS = 3;
 
-interface Chip { key: string; label: string; cls: string; dot?: string }
+interface Chip { key: string; label: string; cls: string; dot?: string; dotCls?: string }
 
 export default function Kalender() {
   const todayKey = useTodayKey();
@@ -26,6 +27,7 @@ export default function Kalender() {
   const editor = useEditor();
   const events = useLiveQuery(() => db.events.toArray(), [], []);
   const todos = useLiveQuery(() => db.todos.toArray(), [], []);
+  const categories = useLiveQuery(() => db.categories.toArray(), [], []);
   const workouts = useLiveQuery(() => db.workouts.toArray(), [], []);
   const sessions = useLiveQuery(() => db.planSessions.toArray(), [], []);
   const sports = useLiveQuery(() => db.sportTypes.toArray(), [], []);
@@ -33,8 +35,8 @@ export default function Kalender() {
 
   const chipsFor = (k: string): Chip[] => [
     ...eventsOn(events, k).map((e) => e.allDay
-      ? { key: 'e' + e.id, label: e.title, cls: 'fill-blue' }
-      : { key: 'e' + e.id, label: e.title, cls: '', dot: 'var(--blue)' }),
+      ? { key: 'e' + e.id, label: e.title, cls: 'fill-cat ' + catClass(categories, e.categoryId) }
+      : { key: 'e' + e.id, label: e.title, cls: catClass(categories, e.categoryId), dot: 'var(--cat)' }),
     ...workoutsOn(workouts, k).map((w) => ({ key: 'w' + w.id, label: workoutTitle(w, sports, programs), cls: w.isRestDay ? '' : 'fill-green', dot: w.isRestDay ? 'var(--muted)' : undefined })),
     ...plansOn(sessions, workouts, k).filter((p) => !p.done).map((p) => ({ key: 'p' + p.session.id, label: p.session.title, cls: '', dot: 'var(--green)' })),
     ...todosOn(todos, k, todayKey).filter((t) => !t.done).map((t) => ({ key: 't' + t.todo.id, label: t.todo.title, cls: '', dot: 'var(--orange)' }))
@@ -90,7 +92,7 @@ export default function Kalender() {
           {selEvents.length === 0 && selTodos.length === 0 && selPlans.length === 0 && selWorkouts.length === 0 && <div className="empty">Keine Einträge</div>}
           {selEvents.map((e) => (
             <button key={e.id} className="agenda-item" onClick={() => editor.editEvent(selected, e)}>
-              <span className="dot" style={{ background: 'var(--blue)' }} />
+              <span className={'cat-dot ' + catClass(categories, e.categoryId)} />
               <span className="time">{eventTimeLabel(e)}</span>
               <span className="ttl">{e.title}</span>
               <TestBadge show={e.isDemo} />

@@ -1,6 +1,7 @@
 import type { PlanerDB } from '../db/db';
 import type { Exercise, Ladder, Program, UnitTemplate } from '../db/types';
 import { ensureDefaultHabits } from './habits';
+import { ensureDefaultCategories } from './categories';
 
 /**
  * Programm-Vorlage in teilbarer Form: Übungen stehen direkt drin (statt IDs),
@@ -129,6 +130,7 @@ export function ensureDefaults(d: PlanerDB): Promise<void> {
       await installProgram(d, WINTER_ARC);
     }
     await ensureDefaultHabits(d);
+    await ensureDefaultCategories(d);
   })().finally(() => pending.delete(d));
   pending.set(d, p);
   return p;
