@@ -10,6 +10,8 @@ import Sport from './screens/Sport';
 import Ziele from './screens/Ziele';
 import Statistik from './screens/Statistik';
 import Einstellungen from './screens/Einstellungen';
+import Irgendwann from './screens/Irgendwann';
+import { EditorProvider } from './components/Editor';
 
 export default function App() {
   const route = useRoute();
@@ -18,6 +20,7 @@ export default function App() {
   useEffect(() => applyTheme(settings.theme), [settings.theme]);
 
   return (
+    <EditorProvider>
     <div className="app">
       {route === 'heute' && <Heute />}
       {route === 'kalender' && <Kalender />}
@@ -25,7 +28,9 @@ export default function App() {
       {route === 'ziele' && <Ziele />}
       {route === 'statistik' && <Statistik />}
       {route === 'einstellungen' && <Einstellungen settings={settings} />}
+      {route === 'irgendwann' && <Irgendwann />}
       <TabBar route={route} />
     </div>
+    </EditorProvider>
   );
 }

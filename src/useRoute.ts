@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Route } from './components/TabBar';
 
-const ROUTES: Route[] = ['heute', 'kalender', 'sport', 'ziele', 'statistik', 'einstellungen'];
+const ROUTES: Route[] = ['heute', 'kalender', 'sport', 'ziele', 'statistik', 'einstellungen', 'irgendwann'];
 
 function read(): Route {
   const r = location.hash.replace(/^#\/?/, '') as Route;

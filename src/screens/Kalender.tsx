@@ -1,21 +1,40 @@
 import { useMemo, useState } from 'react';
-import { addMonths, isSameDay, isSameMonth } from 'date-fns';
-import { formatLong, formatMonth, monthGrid, toKey } from '../lib/dates';
+import { addMonths, isSameMonth } from 'date-fns';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../db/db';
+import { eventsOn, todosOn } from '../lib/agenda';
+import { formatLong, formatMonth, fromKey, monthGrid, toKey } from '../lib/dates';
 import { IconChevronLeft, IconChevronRight } from '../components/icons';
+import { useEditor } from '../components/Editor';
+import { TestBadge, TodoRow, eventTimeLabel } from '../components/AgendaParts';
+import { useTodayKey } from '../useToday';
 
 const WD = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+const MAX_CHIPS = 3;
+
+interface Chip { key: string; label: string; cls: string; dot?: string }
 
 export default function Kalender() {
-  const today = new Date();
+  const todayKey = useTodayKey();
+  const today = fromKey(todayKey);
   const [month, setMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
-  const [selected, setSelected] = useState(today);
+  const [selected, setSelected] = useState(todayKey);
   const grid = useMemo(() => monthGrid(month.getFullYear(), month.getMonth()), [month]);
   const [name, year] = formatMonth(month).split(' ');
+  const editor = useEditor();
+  const events = useLiveQuery(() => db.events.toArray(), [], []);
+  const todos = useLiveQuery(() => db.todos.toArray(), [], []);
 
-  const goToday = () => {
-    setMonth(new Date(today.getFullYear(), today.getMonth(), 1));
-    setSelected(today);
-  };
+  const chipsFor = (k: string): Chip[] => [
+    ...eventsOn(events, k).map((e) => e.allDay
+      ? { key: 'e' + e.id, label: e.title, cls: 'fill-blue' }
+      : { key: 'e' + e.id, label: e.title, cls: '', dot: 'var(--blue)' }),
+    ...todosOn(todos, k, todayKey).filter((t) => !t.done).map((t) => ({ key: 't' + t.todo.id, label: t.todo.title, cls: '', dot: 'var(--orange)' }))
+  ];
+
+  const goToday = () => { setMonth(new Date(today.getFullYear(), today.getMonth(), 1)); setSelected(todayKey); };
+  const selEvents = eventsOn(events, selected);
+  const selTodos = todosOn(todos, selected, todayKey);
 
   return (
     <main className="screen">
@@ -29,13 +48,23 @@ export default function Kalender() {
       <div className="calendar-card" role="grid" aria-label={formatMonth(month)}>
         <div className="month-head"><span>KW</span>{WD.map((w) => <span key={w}>{w}</span>)}</div>
         {grid.map((w) => (
-          <div className="month-week" role="row" key={w.kw + toKey(w.days[0])}>
+          <div className="month-week" role="row" key={toKey(w.days[0])}>
             <span className="month-kw">{w.kw}</span>
             {w.days.map((d) => {
-              const cls = ['day-num', isSameMonth(d, month) ? '' : 'other', isSameDay(d, today) ? 'today' : ''].join(' ');
+              const k = toKey(d);
+              const chips = chipsFor(k);
+              const cls = ['day-num', isSameMonth(d, month) ? '' : 'other', k === todayKey ? 'today' : ''].join(' ');
               return (
-                <button key={toKey(d)} role="gridcell" className="month-day" aria-selected={isSameDay(d, selected)} aria-label={formatLong(d)} onClick={() => setSelected(d)}>
+                <button key={k} role="gridcell" className="month-day" aria-selected={k === selected} aria-label={`${formatLong(d)}, ${chips.length} Einträge`}
+                  onClick={() => setSelected(k)} onDoubleClick={() => editor.create(k)}>
                   <span className={cls}>{d.getDate()}</span>
+                  {chips.slice(0, MAX_CHIPS).map((c) => (
+                    <span key={c.key} className={'cal-chip ' + c.cls}>
+                      {c.dot && <span className="dot" style={{ background: c.dot }} />}
+                      <span className="lbl">{c.label}</span>
+                    </span>
+                  ))}
+                  {chips.length > MAX_CHIPS && <span className="more">+{chips.length - MAX_CHIPS}</span>}
                 </button>
               );
             })}
@@ -44,8 +73,22 @@ export default function Kalender() {
       </div>
 
       <section>
-        <h2 style={{ margin: '4px 4px 10px', fontSize: 18 }}>{formatLong(selected)}</h2>
-        <div className="empty">Keine Einträge</div>
+        <div className="card-head" style={{ margin: '4px 4px 10px' }}>
+          <h2 style={{ fontSize: 18 }}>{formatLong(fromKey(selected))}</h2>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {selEvents.length === 0 && selTodos.length === 0 && <div className="empty">Keine Einträge</div>}
+          {selEvents.map((e) => (
+            <button key={e.id} className="agenda-item" onClick={() => editor.editEvent(selected, e)}>
+              <span className="dot" style={{ background: 'var(--blue)' }} />
+              <span className="time">{eventTimeLabel(e)}</span>
+              <span className="ttl">{e.title}</span>
+              <TestBadge show={e.isDemo} />
+            </button>
+          ))}
+          {selTodos.length > 0 && <div className="card" style={{ padding: '4px 14px' }}>{selTodos.map((v) => <TodoRow key={v.todo.id} v={v} onOpen={() => editor.editTodo(selected, v.todo)} />)}</div>}
+          <button className="btn block" onClick={() => editor.create(selected)}>+ Neuer Eintrag</button>
+        </div>
       </section>
     </main>
   );
